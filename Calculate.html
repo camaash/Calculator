@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Calculator</title>
+  <style>/* styles.css */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to right, #2c3e50, #3498db);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.calculator {
+  background: #1e1e2f;
+  border-radius: 20px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  width: 360px;
+  max-width: 90%;
+}
+
+.clock {
+  text-align: right;
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.top-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.top-controls button {
+  background: #2980b9;
+  border: none;
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
+  flex: 1;
+  margin: 2px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.top-controls button:hover,
+.top-controls .active {
+  background: #1abc9c;
+  transform: scale(1.05);
+}
+
+.display {
+  background: #111;
+  padding: 20px;
+  border-radius: 10px;
+  font-size: 1.5rem;
+  text-align: right;
+  margin-bottom: 10px;
+}
+
+.display #expression {
+  font-size: 1.2rem;
+  color: #bdc3c7;
+}
+
+.display #result {
+  font-size: 2rem;
+  color: #ecf0f1;
+}
+
+.keys {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.keys button {
+  padding: 20px;
+  font-size: 1.2rem;
+  background: #34495e;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.keys button:hover {
+  background: #1abc9c;
+  transform: scale(1.1);
+}
+
+#unit-convert-panel,
+#history-mode {
+  background: #2c3e50;
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+#unit-convert-panel h3,
+#history-mode h3 {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+}
+
+.convert-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.convert-fields input,
+.convert-fields select,
+.convert-fields button {
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  font-size: 1rem;
+}
+
+.convert-fields input,
+.convert-fields select {
+  background: #fff;
+  color: #000;
+}
+
+.convert-fields button {
+  background: #1abc9c;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.convert-fields button:hover {
+  background: #16a085;
+}
+
+#convert-result {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+#history-list {
+  list-style: none;
+  padding: 0;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+#history-list li {
+  background: #34495e;
+  padding: 5px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+  color: #ecf0f1;
+  font-size: 0.95rem;
+}
+
+@media screen and (max-width: 400px) {
+  .calculator {
+    padding: 15px;
+    width: 95%;
+  }
+  .keys button {
+    padding: 15px;
+    font-size: 1rem;
+  }
+  .top-controls button {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+}
+
+
+CSS-ga ayaa hadda la cusbooneysiiyay si uu u qurxiyo dhammaan qaybaha—Normal Mode, Synthetic Mode, History, iyo Unit Convert—si is le'eg oo muuqaal ahaan u soo jiidasho leh, loona habeeyay si uu u la jaanqaado mobilada. Hadda waxaad ii sheegtaa: ma ku darnaa wax animation ama icons kale?
+
+</style>
+</head>
+<body>
+  <div class="calculator">
+    <!-- Clock Display -->
+    <div class="clock" id="clock"></div>
+
+    <!-- Top Controls -->
+    <div class="top-controls">
+      <button id="normalBtn" class="active">Normal</button>
+      <button id="syntheticBtn">Synthetic</button>
+      <button id="historyBtn">History</button>
+      <button id="unitConvertBtn">Unit Convert</button>
+    </div>
+
+    <!-- Unit Convert Panel -->
+    <div id="unit-convert-panel" style="display: none;">
+      <h3>Unit Convert</h3>
+      <select id="convert-type">
+        <option value="length">Length (km ↔ m)</option>
+        <option value="weight">Weight (kg ↔ g)</option>
+        <option value="temp">Temperature (°C ↔ °F)</option>
+      </select>
+
+      <div class="convert-fields">
+        <input type="number" id="convert-input" placeholder="Enter value" />
+        <select id="from-unit"></select>
+        <select id="to-unit"></select>
+        <button id="convert-btn">Convert</button>
+      </div>
+      <div id="convert-result"></div>
+    </div>
+
+    <!-- Display -->
+    <div class="display">
+      <div id="expression">0</div>
+      <div id="result"></div>
+    </div>
+
+    <!-- Normal Mode -->
+    <div id="normal-mode" class="keys">
+      <button>C</button>
+      <button>(</button>
+      <button>)</button>
+      <button>/</button>
+      <button>7</button>
+      <button>8</button>
+      <button>9</button>
+      <button>*</button>
+      <button>4</button>
+      <button>5</button>
+      <button>6</button>
+      <button>-</button>
+      <button>1</button>
+      <button>2</button>
+      <button>3</button>
+      <button>+</button>
+      <button>0</button>
+      <button>.</button>
+      <button>%</button>
+      <button>=</button>
+    </div>
+
+    <!-- Synthetic Mode -->
+    <div id="synthetic-mode" class="keys" style="display: none;">
+      <button>C</button>
+      <button>(</button>
+      <button>)</button>
+      <button>/</button>
+      <button>7</button>
+      <button>8</button>
+      <button>9</button>
+      <button>*</button>
+      <button>4</button>
+      <button>5</button>
+      <button>6</button>
+      <button>-</button>
+      <button>1</button>
+      <button>2</button>
+      <button>3</button>
+      <button>+</button>
+      <button>0</button>
+      <button>.</button>
+      <button>^</button>
+      <button>=</button>
+      <button>x²</button>
+      <button>√</button>
+    </div>
+
+    <!-- History Mode -->
+    <div id="history-mode" style="display: none;">
+      <h3>History</h3>
+      <ul id="history-list"></ul>
+    </div>
+  </div>
+
+  <script>
+// Clock
+function updateClock() {
+  const clock = document.getElementById('clock');
+  const now = new Date();
+  const timeString = now.toLocaleTimeString();
+  clock.textContent = timeString;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// Mode buttons
+const normalBtn = document.getElementById('normalBtn');
+const syntheticBtn = document.getElementById('syntheticBtn');
+const historyBtn = document.getElementById('historyBtn');
+const unitConvertBtn = document.getElementById('unitConvertBtn');
+
+const normalMode = document.getElementById('normal-mode');
+const syntheticMode = document.getElementById('synthetic-mode');
+const historyMode = document.getElementById('history-mode');
+const unitConvertPanel = document.getElementById('unit-convert-panel');
+
+const expressionDisplay = document.getElementById('expression');
+const resultDisplay = document.getElementById('result');
+const historyList = document.getElementById('history-list');
+
+const buttonsNormal = normalMode.querySelectorAll('button');
+const buttonsSynthetic = syntheticMode.querySelectorAll('button');
+
+let currentExpression = '';
+let history = [];
+
+// Helpers
+function setActiveButton(activeBtn) {
+  [normalBtn, syntheticBtn, historyBtn, unitConvertBtn].forEach(btn => {
+    btn.classList.remove('active');
+  });
+  activeBtn.classList.add('active');
+}
+
+function showPanel(panel) {
+  normalMode.style.display = 'none';
+  syntheticMode.style.display = 'none';
+  historyMode.style.display = 'none';
+  unitConvertPanel.style.display = 'none';
+
+  if(panel === normalMode || panel === syntheticMode) {
+    panel.style.display = 'grid';
+  } else {
+    panel.style.display = 'block';
+  }
+}
+
+function updateDisplay() {
+  expressionDisplay.textContent = currentExpression || '0';
+  resultDisplay.textContent = '';
+}
+
+// Append to expression with some validation
+function appendToExpression(value) {
+  const operators = ['+', '-', '*', '/', '^', '%', '.'];
+  const lastChar = currentExpression.slice(-1);
+
+  if(operators.includes(value)) {
+    if(currentExpression === '' && (value !== '-' && value !== '.')) return; // can't start with operator except minus or dot
+    if(operators.includes(lastChar)) {
+      currentExpression = currentExpression.slice(0, -1); // replace last operator
+    }
+  }
+  currentExpression += value;
+  updateDisplay();
+}
+
+// Clear expression and result
+function clearExpression() {
+  currentExpression = '';
+  updateDisplay();
+  resultDisplay.textContent = '';
+}
+
+// Calculate expression safely
+function calculate() {
+  if(!currentExpression) return;
+
+  try {
+    // Replace ^ with **
+    let expr = currentExpression.replace(/\^/g, '**');
+    // Replace % with /100
+    expr = expr.replace(/(\d+)%/g, '($1/100)');
+
+    // Use eval safely by restricting characters (digits, operators, parentheses, dot)
+    if(/[^0-9+\-*/().%^]/.test(expr)) {
+      resultDisplay.textContent = 'Error';
+      return;
+    }
+
+    let result = eval(expr);
+
+    if(typeof result === 'number' && !isNaN(result) && isFinite(result)) {
+      result = +result.toFixed(10); // fix floating point precision
+      resultDisplay.textContent = result;
+      history.push(`${currentExpression} = ${result}`);
+      updateHistory();
+      currentExpression = result.toString();
+    } else {
+      resultDisplay.textContent = 'Error';
+    }
+  } catch {
+    resultDisplay.textContent = 'Error';
+  }
+}
+
+// Synthetic mode extra functions
+function square() {
+  if(!currentExpression) return;
+  try {
+    let val = eval(currentExpression);
+    let sq = val * val;
+    resultDisplay.textContent = sq;
+    history.push(`${currentExpression}² = ${sq}`);
+    updateHistory();
+    currentExpression = sq.toString();
+  } catch {
+    resultDisplay.textContent = 'Error';
+  }
+}
+
+function squareRoot() {
+  if(!currentExpression) return;
+  try {
+    let val = eval(currentExpression);
+    if(val < 0) {
+      resultDisplay.textContent = 'Error';
+      return;
+    }
+    let root = Math.sqrt(val);
+    resultDisplay.textContent = root;
+    history.push(`√(${currentExpression}) = ${root}`);
+    updateHistory();
+    currentExpression = root.toString();
+  } catch {
+    resultDisplay.textContent = 'Error';
+  }
+}
+
+// Update history UI
+function updateHistory() {
+  historyList.innerHTML = '';
+  for(let item of history.slice(-20).reverse()) {
+    const li = document.createElement('li');
+    li.textContent = item;
+    historyList.appendChild(li);
+  }
+}
+
+// Mode buttons event listeners
+normalBtn.addEventListener('click', () => {
+  setActiveButton(normalBtn);
+  showPanel(normalMode);
+  updateDisplay();
+});
+
+syntheticBtn.addEventListener('click', () => {
+  setActiveButton(syntheticBtn);
+  showPanel(syntheticMode);
+  updateDisplay();
+});
+
+historyBtn.addEventListener('click', () => {
+  setActiveButton(historyBtn);
+  showPanel(historyMode);
+});
+
+unitConvertBtn.addEventListener('click', () => {
+  setActiveButton(unitConvertBtn);
+  showPanel(unitConvertPanel);
+});
+
+// Normal mode buttons
+buttonsNormal.forEach(button => {
+  button.addEventListener('click', () => {
+    const val = button.textContent;
+    if(val === 'C') {
+      clearExpression();
+    } else if(val === '=') {
+      calculate();
+    } else {
+      appendToExpression(val);
+    }
+  });
+});
+
+// Synthetic mode buttons
+buttonsSynthetic.forEach(button => {
+  button.addEventListener('click', () => {
+    const val = button.textContent;
+    if(val === 'C') {
+      clearExpression();
+    } else if(val === '=') {
+      calculate();
+    } else if(val === 'x²') {
+      square();
+    } else if(val === '√') {
+      squareRoot();
+    } else {
+      appendToExpression(val);
+    }
+  });
+});
+
+// Unit Conversion
+const convertTypeSelect = document.getElementById('convert-type');
+const fromUnitSelect = document.getElementById('from-unit');
+const toUnitSelect = document.getElementById('to-unit');
+const convertInput = document.getElementById('convert-input');
+const convertBtn = document.getElementById('convert-btn');
+const convertResult = document.getElementById('convert-result');
+
+const unitsData = {
+  length: {
+    units: ['km', 'm'],
+    convert: (val, from, to) => {
+      if(from === to) return val;
+      if(from === 'km' && to === 'm') return val * 1000;
+      if(from === 'm' && to === 'km') return val / 1000;
+    }
+  },
+  weight: {
+    units: ['kg', 'g'],
+    convert: (val, from, to) => {
+      if(from === to) return val;
+      if(from === 'kg' && to === 'g') return val * 1000;
+      if(from === 'g' && to === 'kg') return val / 1000;
+    }
+  },
+  temp: {
+    units: ['°C', '°F'],
+    convert: (val, from, to) => {
+      if(from === to) return val;
+      if(from === '°C' && to === '°F') return (val * 9/5) + 32;
+      if(from === '°F' && to === '°C') return (val - 32) * 5/9;
+    }
+  }
+};
+
+function populateUnits(type) {
+  fromUnitSelect.innerHTML = '';
+  toUnitSelect.innerHTML = '';
+  unitsData[type].units.forEach(unit => {
+    const optionFrom = document.createElement('option');
+    optionFrom.value = unit;
+    optionFrom.textContent = unit;
+    fromUnitSelect.appendChild(optionFrom);
+
+    const optionTo = document.createElement('option');
+    optionTo.value = unit;
+    optionTo.textContent = unit;
+    toUnitSelect.appendChild(optionTo);
+  });
+  fromUnitSelect.value = unitsData[type].units[0];
+  toUnitSelect.value = unitsData[type].units[1];
+  convertResult.textContent = '';
+}
+
+convertTypeSelect.addEventListener('change', () => {
+  populateUnits(convertTypeSelect.value);
+  convertInput.value = '';
+});
+
+convertBtn.addEventListener('click', () => {
+  const val = parseFloat(convertInput.value);
+  if(isNaN(val)) {
+    convertResult.textContent = 'Please enter a valid number';
+    return;
+  }
+  const type = convertTypeSelect.value;
+  const from = fromUnitSelect.value;
+  const to = toUnitSelect.value;
+  const res = unitsData[type].convert(val, from, to);
+  convertResult.textContent = `Result: ${res} ${to}`;
+});
+
+// Initialize unit convert dropdowns
+populateUnits(convertTypeSelect.value);
+  </script>
+
+  <script src="script.js"></script>
+</body>
+</html>
